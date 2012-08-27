@@ -15,6 +15,7 @@ class Group_Buying_PxFusion extends Group_Buying_Offsite_Processors {
 	const API_MODE_OPTION = 'gb_pxfusion_mode';
 	const PAYMENT_METHOD = 'Credit (PxFusion)';
 	protected static $instance;
+	protected static $px_checkout;
 	private $api_mode = self::MODE_TEST;
 	private $api_username = '';
 	private $api_password = '';
@@ -46,6 +47,7 @@ class Group_Buying_PxFusion extends Group_Buying_Offsite_Processors {
 
 		// Remove the review page and add the new pages.
 		add_action( 'gb_send_offsite_for_payment', array( $this, 'display_payment_page' ), 200, 1 );
+		add_filter( 'gb_string_your-purchase-review', array( $this, 'modify_string' ), 10 );
 
 		// Redirect back from Px and finalize purchase
 		add_action( 'gb_load_cart', array( $this, 'process_px_payment' ), 10, 2 );
@@ -68,6 +70,10 @@ class Group_Buying_PxFusion extends Group_Buying_Offsite_Processors {
 		return '<img src="http://www.paymentexpress.com/images/logos_white/paymentexpress_png.png" id="payment_express_icon"/>';
 	}
 
+	public function modify_string() {
+		return gb__('Credit Card Information');
+	}
+
 	public function display_payment_page( Group_Buying_Checkouts $checkout ) {
 
 		$cart = $checkout->get_cart();
@@ -76,70 +82,34 @@ class Group_Buying_PxFusion extends Group_Buying_Offsite_Processors {
 		}
 
 		if ( $_REQUEST['gb_checkout_action'] == Group_Buying_Checkouts::PAYMENT_PAGE ) {
+			add_action( 'the_post', array( $this, 'view_checkout' ), 100, 1 );
+		}
+		
+	}
 
-			$token_response = self::create_token( $checkout );
+
+	/**
+	 * Update the global $pages array with the HTML for the current checkout page
+	 *
+	 * @static
+	 * @param object  $post
+	 * @return void
+	 */
+	public function view_checkout( $post ) {
+		if ( $post->post_type == Group_Buying_Cart::POST_TYPE ) {
+			remove_filter( 'the_content', 'wpautop' );
+			
+			$token_response = self::create_token( Group_Buying_Checkouts::get_instance() );
 			if ( !$token_response )
 				return;
 
 			ob_start();
-				?>
-					<form enctype='multipart/form-data' action="https://sec.paymentexpress.com/pxmi3/pxfusionauth" method="post">
-						<input type="hidden" name="SessionId" value="<?php echo $token_response['pxfusion_session_id']; ?>" />
-						<input type="hidden" name="Action" value="Add" />
-						<input type="hidden" name="Object" value="DpsPxPay" />
-						<table>
-							<tr>
-								<td>Amount</td>
-								<td><small style="color: #66cd66;">Set when GetTransactionId was called</small><br/>
-								<!--<input type="text" name="Amount" value="12.00" />-->
-								</td>
-							</tr>
-							<tr>
-								<td>Card Number</td>
-								<td><input type="text" name="CardNumber" value="4111111111111111" maxlength="16" /></td>
-							</tr>
-							<tr>
-								<td>Expiry (mm/yy)</td>
-								<td>
-									<input type="text" name="ExpiryMonth" value="12" size="2" /> /
-									<input type="text" name="ExpiryYear" value="12" size="2" />
-								</td>
-							</tr>
-							<tr>
-								<td>Card Security Code</td>
-								<td><input type="text" name="Cvc2" value="123" size="4" /></td>
-							</tr>
-							<tr>
-								<td>Card Holder Name</td>
-								<td><input type="text" name="CardHolderName" value="Joe Bloggs" /></td>
-							</tr>
-							<!-- Optional fields for extra data
-							<input type="text" name="UserTxnData1" value="" />
-							<input type="text" name="UserTxnData1" value="" />
-							<input type="text" name="UserTxnData1" value="" />
-							-->
-							<tr>
-								<td></td>
-								<td><input type="submit" value="Submit" /></td>
-							</tr>
-						</table>
-						<p>
-							<b>Note:</b> For the purposes of this test, copy this transaction id to your clipboard.<br />
-							<small>(usually it should be stored in a database to query the transaction outcome later)</small>
-						</p>
-						<p>
-							<input type="text" value="<?php echo $token_response['pxfusion_transaction_id']; ?>" size="32" />
-						</p>
-						<p>
-							<img src="http://www.paymentexpress.com/images/logos_white/paymentexpress.png" alt="Payment Processor" width="276" height="42" />
-						</p>
-					</form>
-				<?php
+				include dirname( __FILE__ ) . '/views/form.php';
 			$body = ob_get_clean();
-			echo $body;
-			exit();
+
+			global $pages;
+			$pages = array( $body );
 		}
-		
 	}
 
 	public function create_token( Group_Buying_Checkouts $checkout ) {
@@ -240,6 +210,7 @@ attempted).';
 					$message = 'Transaction declined.';
 					break;
 			}
+			$message = ( $transaction_details['responseText'] != '' ) ? $transaction_details['responseText'] : $message ;
 			self::set_message( $message );
 			return;
 		}
