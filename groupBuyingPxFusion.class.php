@@ -67,7 +67,7 @@ class Group_Buying_PxFusion extends Group_Buying_Offsite_Processors {
 	}
 
 	public static function checkout_icon() {
-		return '<img src="http://www.paymentexpress.com/images/logos_white/paymentexpress_png.png" id="payment_express_icon"/>';
+		return gb__('Secure Credit Card Payment');
 	}
 
 	public function modify_string() {
