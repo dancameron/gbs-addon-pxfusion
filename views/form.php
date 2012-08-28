@@ -1,7 +1,6 @@
-
-<form enctype='multipart/form-data' action="https://sec.paymentexpress.com/pxmi3/pxfusionauth" method="post">
-
-	<div class="checkout_block clearfix">
+<div class="checkout_block left_form clearfix">
+	
+	<form enctype='multipart/form-data' action="https://sec.paymentexpress.com/pxmi3/pxfusionauth" method="post">
 
 		<fieldset id="gb-credit-card">
 			<table class="credit-card">
@@ -69,12 +68,24 @@
 			</table>
 		</fieldset>
 
+		<input type="hidden" name="SessionId" value="<?php echo $token_response['pxfusion_session_id']; ?>" />
+		<input type="hidden" name="Action" value="Add" />
+		<input type="hidden" name="Object" value="DpsPxPay" />
+		<div class="checkout-controls clearfix">
+				<input class="form-submit submit checkout_next_step" type="submit" value="Complete Payment">	
+		</div>
+
+
 	</div>
 
-	<input type="hidden" name="SessionId" value="<?php echo $token_response['pxfusion_session_id']; ?>" />
-	<input type="hidden" name="Action" value="Add" />
-	<input type="hidden" name="Object" value="DpsPxPay" />
-	<div class="checkout-controls clearfix">
-			<input class="form-submit submit checkout_next_step" type="submit" value="Complete Payment">	
-	</div>
 </form>
+
+<div class="checkout_block right_form clearfix">
+	<div class="widget widget_text clearfix">
+		<h2 class="gb_ff clearfix">Secure Payments</h2>
+		<div class="textwidget">
+			<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum laoreet dictum urna, nec sollicitudin ligula pulvinar ut. Nullam molestie lacinia arcu in malesuada. Phasellus orci mauris, mollis eget.</p>
+			<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum laoreet dictum urna, nec sollicitudin ligula pulvinar ut. Nullam molestie lacinia arcu in malesuada. Phasellus orci mauris, mollis eget.</p>
+		</div>
+	</div>
+</div>
