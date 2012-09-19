@@ -87,6 +87,9 @@ class Group_Buying_PxFusion extends Group_Buying_Offsite_Processors {
 		
 	}
 
+	public static function returned_from_offsite() {
+		return ( isset( $_GET['return'] ) && $_GET['return'] == 'px' );
+	}
 
 	/**
 	 * Update the global $pages array with the HTML for the current checkout page

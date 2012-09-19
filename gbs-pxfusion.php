@@ -13,7 +13,6 @@ Domain Path: /lang
 */
 
 add_action('gb_register_processors', 'gb_load_pxfusion');
-
 function gb_load_pxfusion() {
 	require_once('groupBuyingPxFusion.class.php');
 }
