@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Group Buying Payment Processor - PxFusion
-Version: Beta
+Version: 0.01
 Plugin URI: http://sproutventure.com/wordpress/group-buying
 Description: PxFusion Add-on.
 Author: Sprout Venture
